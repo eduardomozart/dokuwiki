@@ -358,7 +358,11 @@ class Search extends Ui
             if ($namespace === $baseNS) {
                 continue;
             }
-            $firstColon = strpos((string)$namespace, ':', $baseNSLength + 1) ?: strlen($namespace);
+            $nsStr = (string)$namespace;
+            $offset = $baseNSLength + 1;
+            $firstColon = $offset <= strlen($nsStr)
+                ? (strpos($nsStr, ':', $offset) ?: strlen($nsStr))
+                : strlen($nsStr);
             $subtopNS = substr($namespace, 0, $firstColon);
             if (empty($namespaces[$subtopNS])) {
                 $namespaces[$subtopNS] = 0;

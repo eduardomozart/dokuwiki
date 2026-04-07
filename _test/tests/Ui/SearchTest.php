@@ -158,6 +158,29 @@ class SearchTest extends \DokuWikiTest
         $this->assertEquals($expectedPageName, $actualPageName, $msg);
     }
 
+    /**
+     * Regression test: searching for only a namespace filter like @ws:nps should not throw a
+     * PHP 8+ ValueError from strpos() when a result page's namespace is shorter than the base
+     * namespace length + 1.
+     *
+     * For example, the page "ws:nps" has namespace "ws" (length 2). When the base namespace is
+     * "ws:nps" (length 6), the original code called strpos("ws", ":", 7) which exceeds the string
+     * length and triggers ValueError on PHP 8+.
+     *
+     * @see https://github.com/eduardomozart/dokuwiki/issues
+     */
+    function test_getAdditionalNamespacesFromResults_noValueErrorWithShortNamespace()
+    {
+        // The page "ws:nps" has namespace "ws" (length 2).
+        // With baseNS "ws:nps" (length 6), offset = 7, which exceeds strlen("ws") = 2.
+        // This must not throw a ValueError on PHP 8+.
+        $search = new \dokuwiki\Ui\Search([], ['ws:nps' => 1], []);
+
+        $result = self::callInaccessibleMethod($search, 'getAdditionalNamespacesFromResults', ['ws:nps']);
+
+        $this->assertIsArray($result);
+    }
+
 }
 
 

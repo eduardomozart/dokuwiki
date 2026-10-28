@@ -549,6 +549,26 @@ class Doku_Renderer_metadata extends Doku_Renderer
             }
         }
 
+        if (strtolower($wikiName) === 'this') {
+            // Media endpoints: fetch.php, detail.php, _media/, _detail/
+            if (
+                preg_match('/(?:lib\/exe\/)?(?:fetch|detail)\.php\?[^#]*\bmedia=([^&#|]+)/i', $wikiUri, $m) ||
+                preg_match('/(?:lib\/exe\/)?(?:fetch|detail)\.php\/([^?#|]+)/i', $wikiUri, $m) ||
+                preg_match('/^_(?:media|detail)\/([^?#|]+)/i', $wikiUri, $m)
+            ) {
+                $media = str_replace('/', ':', urldecode($m[1]));
+                $this->_recordMediaUsage($media);
+            // Page endpoints: doku.php with ?id= or PATH_INFO
+            } elseif (
+                preg_match('/(?:lib\/exe\/)?doku\.php\?[^#]*\bid=([^&#|]+)/i', $wikiUri, $m) ||
+                preg_match('/(?:lib\/exe\/)?doku\.php\/([^?#|]+)/i', $wikiUri, $m)
+            ) {
+                $id = str_replace('/', ':', urldecode($m[1]));
+                $this->internallink($id, $name);
+                return;
+            }
+        }
+
         if ($this->capture) {
             [$wikiUri] = explode('#', $wikiUri, 2);
             $name = $this->_getLinkTitle($name, $wikiUri);
